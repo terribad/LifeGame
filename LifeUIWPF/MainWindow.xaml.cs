@@ -28,12 +28,10 @@ namespace LifeUIWPF
 
         DispatcherTimer timer;
         FakeLifeGrid grid = new FakeLifeGrid(10,10);
-        LifeGridView gridView;
+        
         private void content_Loaded(object sender, RoutedEventArgs e)
         {
-            gridView = new LifeGridView(grid.RowCount, grid.ColCount);
-            gridView.Margin = new Thickness(20);            
-            content.Children.Add(gridView);
+            
 
             CreateTimer();
             UpdateUI();

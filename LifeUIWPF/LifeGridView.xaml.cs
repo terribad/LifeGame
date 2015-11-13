@@ -109,11 +109,9 @@ namespace LifeUIWPF
             SetCell(cell, live);            
         }
 
-        private void CreateGridView()
+        private void CreateGrid()
         {
             Background = Brushes.White;
-            Grid.SetRow(this, 1);
-            Grid.SetColumn(this, 0);
             deadBrush = Background;
             cells = new Ellipse[RowCount, ColCount];
             for (int r = 0; r < RowCount; r++)
@@ -129,7 +127,7 @@ namespace LifeUIWPF
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            CreateGridView();
+            CreateGrid();
         }
     }
 }
