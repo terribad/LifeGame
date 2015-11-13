@@ -31,7 +31,6 @@ namespace LifeUIWPF
         LifeGridView gridView;
         private void content_Loaded(object sender, RoutedEventArgs e)
         {
-           
             gridView = new LifeGridView(grid.RowCount, grid.ColCount);
             gridView.Margin = new Thickness(20);
             gridView.Background = new SolidColorBrush(Colors.LightBlue);
@@ -60,8 +59,8 @@ namespace LifeUIWPF
 
         void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            int[,] cellChanged = grid.GetCellChanged();
-            gridView.ChangedCell = cellChanged;           
+            CellInfo[] cellsChanged = grid.Evolve();
+            gridView.ChangeCells(cellsChanged);
         }
 
         private void btnStart_Click(object sender, RoutedEventArgs e)

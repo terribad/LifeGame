@@ -46,16 +46,11 @@ namespace LifeUIWPF
             }
         }
 
-        public int[,] ChangedCell
+        public void ChangeCells(CellInfo[] cellsChanged)
         {
-            set 
+            foreach (var cell in cellsChanged)
             {
-                for (int i = 0; i < value.GetLength(0); i++)
-                {
-                    int r = value[i, 0];
-                    int c = value[i, 1];
-                    ChangeCell(r,c);
-                }
+                SetCell(cell.Row, cell.Col, cell.Live);
             }
         }
 
@@ -98,9 +93,9 @@ namespace LifeUIWPF
             ChangeCell(cell);
         }
 
-        private void ChangeCell(int r, int c)
+        private void SetCell(int row, int col, bool live)
         {
-            ChangeCell(cells[r, c]);
+            SetCell(cells[row, col], live);
         }
 
         private void SetCell(Ellipse cell, bool live)
