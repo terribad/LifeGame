@@ -55,35 +55,31 @@ namespace LifeUIWPF
         }
 
         readonly SolidColorBrush liveBrush = new SolidColorBrush(Colors.LightCoral);
-        readonly SolidColorBrush deadBrush = new SolidColorBrush(Colors.LightGray);        
+        Brush deadBrush = new SolidColorBrush(Colors.LightGray);        
         readonly int cellSize = 30;
         Ellipse[,] cells;
-        private void canvas_Loaded(object sender, RoutedEventArgs e)
-        {
-            cells = new Ellipse[RowCount, ColCount];
-            for (int r = 0; r < RowCount; r++)
-            {
-                for (int c = 0; c < ColCount; c++)
-                {
-                    var cell = CreateCell(r, c);
-                    SetCell(cell, false);
-                    cells[r, c] = cell;
-                    canvas.Children.Add(cell);
-                }
-            }
-        }
 
         private Ellipse CreateCell(int r, int c)
         {
+            Rectangle rect = new Rectangle();
+            rect.Stroke = new SolidColorBrush(Colors.LightGray);
+            rect.StrokeThickness = 1;
+
+            rect.Width = cellSize + 6;
+            rect.Height = cellSize + 6;
+            Canvas.SetLeft(rect, c * rect.Width);
+            Canvas.SetTop(rect, r * rect.Height);
+            
             Ellipse el = new Ellipse();
             el.Width = cellSize;
             el.Height = cellSize;
-            el.Stroke = new SolidColorBrush(Colors.Black);
-            el.StrokeThickness = 1;
-            Canvas.SetLeft(el, c * (cellSize + 5) + 5);
-            Canvas.SetTop(el, r * (cellSize + 5) + 25);
+
+            Canvas.SetLeft(el, c * (rect.Width)+3);
+            Canvas.SetTop(el, r * (rect.Height)+3);
             el.MouseDown += el_MouseDown;
             el.Tag = false;
+            canvas.Children.Add(rect);
+            canvas.Children.Add(el);
             return el;
         }
 
@@ -111,6 +107,29 @@ namespace LifeUIWPF
         {
             bool live = !(bool)cell.Tag;
             SetCell(cell, live);            
+        }
+
+        private void CreateGridView()
+        {
+            Background = Brushes.White;
+            Grid.SetRow(this, 1);
+            Grid.SetColumn(this, 0);
+            deadBrush = Background;
+            cells = new Ellipse[RowCount, ColCount];
+            for (int r = 0; r < RowCount; r++)
+            {
+                for (int c = 0; c < ColCount; c++)
+                {
+                    var cell = CreateCell(r, c);
+                    SetCell(cell, false);
+                    cells[r, c] = cell;
+                }
+            }
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            CreateGridView();
         }
     }
 }

@@ -32,8 +32,7 @@ namespace LifeUIWPF
         private void content_Loaded(object sender, RoutedEventArgs e)
         {
             gridView = new LifeGridView(grid.RowCount, grid.ColCount);
-            gridView.Margin = new Thickness(20);
-            gridView.Background = new SolidColorBrush(Colors.LightBlue);
+            gridView.Margin = new Thickness(20);            
             content.Children.Add(gridView);
 
             CreateTimer();
