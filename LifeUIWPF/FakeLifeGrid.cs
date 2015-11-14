@@ -13,12 +13,13 @@ namespace LifeUIWPF
 
         public FakeLifeGrid(int rowCount, int colCount)
         {
-            this.RowCount = rowCount;
-            this.ColCount = colCount;
+            this.GridSize = new GridSize(rowCount, colCount);
             grid = new bool[RowCount, ColCount];
         }
-        public int RowCount { get; private set; }
-        public int ColCount { get; private set; }
+
+        public GridSize GridSize { get; private set; }
+        public int RowCount { get { return GridSize.RowCount; } }
+        public int ColCount { get { return GridSize.ColCount; } }
         public CellInfo[] Evolve()
         {
             var nc = rnd.Next(1, 8);
@@ -40,5 +41,16 @@ namespace LifeUIWPF
         public int Row;
         public int Col;
         public bool Live;
+    }
+
+    public class GridSize
+    {
+        public GridSize (int rowCount, int colCount)
+        {
+            this.RowCount = rowCount;
+            this.ColCount = colCount;
+        }
+        public int RowCount {get;private set;}
+        public int ColCount { get; private set; }
     }
 }

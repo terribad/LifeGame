@@ -20,19 +20,24 @@ namespace LifeUIWPF
     /// </summary>
     public partial class LifeGridView : UserControl
     {
-        public LifeGridView():this(10,10)
-        {
-        }
-
-        public LifeGridView(int rowCount, int colCount)
+        public LifeGridView()
         {
             InitializeComponent();
-            this.RowCount = rowCount;
-            this.ColCount = colCount;
         }
 
-        public int RowCount { get; private set; }
-        public int ColCount { get; private set; }
+        private GridSize _gridSize = new GridSize(10,10);
+        public GridSize GridSize
+        {
+            get { return _gridSize; }
+            set
+            {
+                _gridSize = value;
+                CreateGrid();
+            }
+        }
+
+        public int RowCount { get { return GridSize.RowCount; } }
+        public int ColCount { get { return GridSize.ColCount; } }
 
         public void Reset()
         {
@@ -55,8 +60,8 @@ namespace LifeUIWPF
         }
 
         readonly SolidColorBrush liveBrush = new SolidColorBrush(Colors.LightCoral);
-        Brush deadBrush = new SolidColorBrush(Colors.LightGray);        
-        readonly int cellSize = 30;
+        Brush deadBrush = new SolidColorBrush(Colors.LightGray);
+        public Size CellSize { get; private set; }
         Ellipse[,] cells;
 
         private Ellipse CreateCell(int r, int c)
@@ -65,14 +70,14 @@ namespace LifeUIWPF
             rect.Stroke = new SolidColorBrush(Colors.LightGray);
             rect.StrokeThickness = 1;
 
-            rect.Width = cellSize + 6;
-            rect.Height = cellSize + 6;
+            rect.Width = CellSize.Width;
+            rect.Height = CellSize.Height;
             Canvas.SetLeft(rect, c * rect.Width);
             Canvas.SetTop(rect, r * rect.Height);
             
             Ellipse el = new Ellipse();
-            el.Width = cellSize;
-            el.Height = cellSize;
+            el.Width = rect.Width-6;
+            el.Height = rect.Height-6;
 
             Canvas.SetLeft(el, c * (rect.Width)+3);
             Canvas.SetTop(el, r * (rect.Height)+3);
@@ -111,6 +116,8 @@ namespace LifeUIWPF
 
         private void CreateGrid()
         {
+            canvas.Children.Clear();
+            CellSize = new Size(canvas.ActualWidth / ColCount, canvas.ActualHeight / RowCount);
             Background = Brushes.White;
             deadBrush = Background;
             cells = new Ellipse[RowCount, ColCount];

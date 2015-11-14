@@ -26,27 +26,21 @@ namespace LifeUIWPF
             InitializeComponent();
         }
 
-        DispatcherTimer timer;
-        FakeLifeGrid grid = new FakeLifeGrid(10,10);
-        
-        private void content_Loaded(object sender, RoutedEventArgs e)
-        {
-            
+        const int GRID_COUNT = 20;
+        static GridSize gridSize = new GridSize(20, 20);
+        const double CellSize = 36;
 
+        DispatcherTimer timer;
+        FakeLifeGrid grid = new FakeLifeGrid(GRID_COUNT, GRID_COUNT);
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
             CreateTimer();
+            this.Width = CellSize * gridSize.ColCount + gridView.Margin.Left + gridView.Margin.Right;
+            this.Height = CellSize * gridSize.RowCount + gridView.Margin.Top + gridView.Margin.Bottom;
+            gridView.GridSize = gridSize;
             UpdateUI();
         }
 
-        void Start()
-        {
-            timer.Start();
-        }
-
-        void Stop()
-        {
-            timer.Stop();
-        }
-        
         void CreateTimer()
         {
             timer = new DispatcherTimer();
@@ -79,5 +73,7 @@ namespace LifeUIWPF
             btnReset.IsEnabled = !timer.IsEnabled;
             btnStart.Content = timer.IsEnabled ? "Stop" : "Start";
         }
+
+       
     }
 }
