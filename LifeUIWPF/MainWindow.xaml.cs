@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 
+using LifeEngine;
 namespace LifeUIWPF
 {
     /// <summary>
@@ -27,7 +28,8 @@ namespace LifeUIWPF
         }
 
         const int GRID_COUNT = 20;
-        static GridSize gridSize = new GridSize(20, 20);
+        GridSize gridSize = new GridSize(20, 20);
+        
         const double CellSize = 36;
 
         DispatcherTimer timer;
@@ -38,6 +40,7 @@ namespace LifeUIWPF
             this.Width = CellSize * gridSize.ColCount + gridView.Margin.Left + gridView.Margin.Right;
             this.Height = CellSize * gridSize.RowCount + gridView.Margin.Top + gridView.Margin.Bottom;
             gridView.GridSize = gridSize;
+            gridView.GridViewType = GridViewType.DeadGrayCells;
             UpdateUI();
         }
 
@@ -71,9 +74,18 @@ namespace LifeUIWPF
         private void UpdateUI()
         {
             btnReset.IsEnabled = !timer.IsEnabled;
+            btnSetGridType.IsEnabled = !timer.IsEnabled;
             btnStart.Content = timer.IsEnabled ? "Stop" : "Start";
+            btnSetGridType.Content = (gridView.GridViewType == GridViewType.GridLines) ? "Celle grigie" : "Reticolato";
         }
 
-       
+        private void btnSetGridType_Click(object sender, RoutedEventArgs e)
+        {
+            if (gridView.GridViewType == GridViewType.DeadGrayCells)
+                gridView.GridViewType = GridViewType.GridLines;
+            else
+                gridView.GridViewType = GridViewType.DeadGrayCells;
+            UpdateUI();
+        }
     }
 }

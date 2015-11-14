@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-
+using LifeEngine;
 namespace LifeUIWPF
 {
     /// <summary>
@@ -25,6 +25,11 @@ namespace LifeUIWPF
             InitializeComponent();
         }
 
+        const double CELLS_SPACING = 6;
+        static readonly SolidColorBrush liveBrush = new SolidColorBrush(Colors.LightCoral);
+        static readonly SolidColorBrush deadGrayCellsBrush = new SolidColorBrush(Colors.LightGray);
+        Brush deadBrush = deadGrayCellsBrush;
+
         private GridSize _gridSize = new GridSize(10,10);
         public GridSize GridSize
         {
@@ -35,6 +40,19 @@ namespace LifeUIWPF
                 CreateGrid();
             }
         }
+
+        private GridViewType _gridViewType = GridViewType.GridLines;
+        public GridViewType GridViewType
+        {
+            get { return _gridViewType; }
+            set 
+            { 
+                _gridViewType = value;
+                CreateGrid();
+            }
+        }
+        
+        
 
         public int RowCount { get { return GridSize.RowCount; } }
         public int ColCount { get { return GridSize.ColCount; } }
@@ -58,34 +76,37 @@ namespace LifeUIWPF
                 SetCell(cell.Row, cell.Col, cell.Live);
             }
         }
-
-        readonly SolidColorBrush liveBrush = new SolidColorBrush(Colors.LightCoral);
-        Brush deadBrush = new SolidColorBrush(Colors.LightGray);
+        
         public Size CellSize { get; private set; }
         Ellipse[,] cells;
 
         private Ellipse CreateCell(int r, int c)
         {
+            if (GridViewType == LifeUIWPF.GridViewType.GridLines)
+                CreateGrid(r, c);
+            Ellipse el = new Ellipse();
+            el.Width = CellSize.Width - CELLS_SPACING;
+            el.Height = CellSize.Height - CELLS_SPACING;
+            el.Stroke = (GridViewType == GridViewType.DeadGrayCells) ? new SolidColorBrush(Colors.Black) : null;
+            el.StrokeThickness = 1;
+            Canvas.SetLeft(el, c * (CellSize.Width) + CELLS_SPACING/2);
+            Canvas.SetTop(el, r * (CellSize.Height) + CELLS_SPACING/2);
+            el.MouseDown += el_MouseDown;
+            el.Tag = false;
+            canvas.Children.Add(el);
+            return el;
+        }
+
+        private void CreateGrid(int r, int c)
+        {
             Rectangle rect = new Rectangle();
             rect.Stroke = new SolidColorBrush(Colors.LightGray);
             rect.StrokeThickness = 1;
-
             rect.Width = CellSize.Width;
             rect.Height = CellSize.Height;
             Canvas.SetLeft(rect, c * rect.Width);
             Canvas.SetTop(rect, r * rect.Height);
-            
-            Ellipse el = new Ellipse();
-            el.Width = rect.Width-6;
-            el.Height = rect.Height-6;
-
-            Canvas.SetLeft(el, c * (rect.Width)+3);
-            Canvas.SetTop(el, r * (rect.Height)+3);
-            el.MouseDown += el_MouseDown;
-            el.Tag = false;
             canvas.Children.Add(rect);
-            canvas.Children.Add(el);
-            return el;
         }
 
         void el_MouseDown(object sender, MouseButtonEventArgs e)
@@ -118,13 +139,15 @@ namespace LifeUIWPF
         {
             canvas.Children.Clear();
             CellSize = new Size(canvas.ActualWidth / ColCount, canvas.ActualHeight / RowCount);
-            Background = Brushes.White;
-            deadBrush = Background;
+
+            deadBrush = (GridViewType == GridViewType.GridLines) ? Background : deadGrayCellsBrush;
+
             cells = new Ellipse[RowCount, ColCount];
             for (int r = 0; r < RowCount; r++)
             {
                 for (int c = 0; c < ColCount; c++)
                 {
+
                     var cell = CreateCell(r, c);
                     SetCell(cell, false);
                     cells[r, c] = cell;
@@ -136,5 +159,11 @@ namespace LifeUIWPF
         {
             CreateGrid();
         }
+    }
+
+    public enum GridViewType
+    {
+        GridLines,
+        DeadGrayCells
     }
 }

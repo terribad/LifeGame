@@ -62,7 +62,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FakeLifeGrid.cs" />
     <Compile Include="LifeGridView.xaml.cs">
       <DependentUpon>LifeGridView.xaml</DependentUpon>
     </Compile>
@@ -100,6 +99,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LifeEngine\LifeEngine.csproj">
+      <Project>{78b8289b-f95a-4a9a-9542-da6e9dffa6c8}</Project>
+      <Name>LifeEngine</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

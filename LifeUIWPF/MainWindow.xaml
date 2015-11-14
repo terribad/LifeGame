@@ -8,8 +8,9 @@
         <StackPanel DockPanel.Dock="top" Orientation="Horizontal" HorizontalAlignment="Center" Height="30">
             <Button Name="btnStart" Margin="0,5,10,0" Click="btnStart_Click">Start</Button>
             <Button Name="btnReset" Margin="0,5,10,0" Click="btnReset_Click">Reset</Button>
+            <Button Name="btnSetGridType" Margin="0,5,10,0" Click="btnSetGridType_Click">Reticolato</Button>
         </StackPanel>
-        <local:LifeGridView x:Name="gridView" Margin="10, 10, 10, 10"></local:LifeGridView>
+        <local:LifeGridView x:Name="gridView" Margin="10, 10, 10, 10" Background="white"></local:LifeGridView>
     </DockPanel>
 
 </Window>
