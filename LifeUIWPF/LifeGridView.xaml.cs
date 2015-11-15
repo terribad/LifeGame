@@ -26,9 +26,15 @@ namespace LifeUIWPF
         }
 
         const double CELLS_SPACING = 6;
-        static readonly SolidColorBrush liveBrush = new SolidColorBrush(Colors.LightCoral);
-        static readonly SolidColorBrush deadGrayCellsBrush = new SolidColorBrush(Colors.LightGray);
+
+        static readonly Brush liveBrush = new SolidColorBrush(Colors.LightCoral);
+        static readonly Brush deadGrayCellsBrush = new SolidColorBrush(Colors.LightGray);
+        static readonly Brush lineBrush = new SolidColorBrush(Colors.LightGray);
         Brush deadBrush = deadGrayCellsBrush;
+        Ellipse[,] cells;
+        Line[] lines;
+        public Size CellSize { get; private set; }
+        
 
         private GridSize _gridSize = new GridSize(10,10);
         public GridSize GridSize
@@ -37,7 +43,7 @@ namespace LifeUIWPF
             set
             {
                 _gridSize = value;
-                CreateGrid();
+                UpdateUI();
             }
         }
 
@@ -48,11 +54,10 @@ namespace LifeUIWPF
             set 
             { 
                 _gridViewType = value;
-                CreateGrid();
+                deadBrush = (GridViewType == GridViewType.GridLines) ? Background : deadGrayCellsBrush;
+                UpdateUI();
             }
         }
-        
-        
 
         public int RowCount { get { return GridSize.RowCount; } }
         public int ColCount { get { return GridSize.ColCount; } }
@@ -76,18 +81,12 @@ namespace LifeUIWPF
                 SetCell(cell.Row, cell.Col, cell.Live);
             }
         }
-        
-        public Size CellSize { get; private set; }
-        Ellipse[,] cells;
 
         private Ellipse CreateCell(int r, int c)
         {
-            if (GridViewType == LifeUIWPF.GridViewType.GridLines)
-                CreateGrid(r, c);
             Ellipse el = new Ellipse();
             el.Width = CellSize.Width - CELLS_SPACING;
             el.Height = CellSize.Height - CELLS_SPACING;
-            el.Stroke = (GridViewType == GridViewType.DeadGrayCells) ? new SolidColorBrush(Colors.Black) : null;
             el.StrokeThickness = 1;
             Canvas.SetLeft(el, c * (CellSize.Width) + CELLS_SPACING/2);
             Canvas.SetTop(el, r * (CellSize.Height) + CELLS_SPACING/2);
@@ -97,16 +96,31 @@ namespace LifeUIWPF
             return el;
         }
 
-        private void CreateGrid(int r, int c)
+
+        void UpdateUI()
         {
-            Rectangle rect = new Rectangle();
-            rect.Stroke = new SolidColorBrush(Colors.LightGray);
-            rect.StrokeThickness = 1;
-            rect.Width = CellSize.Width;
-            rect.Height = CellSize.Height;
-            Canvas.SetLeft(rect, c * rect.Width);
-            Canvas.SetTop(rect, r * rect.Height);
-            canvas.Children.Add(rect);
+            foreach (var line in canvas.Children.OfType<Line>())
+            {
+                if (GridViewType == GridViewType.DeadGrayCells)
+                    line.Stroke = null;
+                else
+                    line.Stroke = lineBrush;
+            }
+
+            foreach (var cell in canvas.Children.OfType<Ellipse>())
+            {
+                if (GridViewType == GridViewType.DeadGrayCells)
+                {
+                    cell.Stroke = new SolidColorBrush(Colors.Black);
+                    cell.Fill = deadBrush;
+                }
+                else
+                {
+                    cell.Stroke = null;
+                    cell.Fill = canvas.Background;
+                    //cell.Fill = Brushes.White;
+                }
+            }
         }
 
         void el_MouseDown(object sender, MouseButtonEventArgs e)
@@ -135,24 +149,59 @@ namespace LifeUIWPF
             SetCell(cell, live);            
         }
 
+        private void CreateGridLines()
+        {
+            for (int r = 1; r < RowCount; r++)
+            {
+                CreateHorizontalLine(r);
+            }
+
+            for (int c = 1; c < ColCount; c++)
+            {
+                CreateVerticalLine(c);
+            }
+        }
+
+        private void CreateVerticalLine(int c)
+        {
+            Line li = new Line();
+            li.X1 = c * CellSize.Width;
+            li.X2 = li.X1;
+            li.Y1 = 0;
+            li.Y2 = canvas.ActualHeight;
+            canvas.Children.Add(li);
+        }
+
+        private void CreateHorizontalLine(int r)
+        {
+            Line li = new Line();
+            li.X1 = 0;
+            li.X2 = canvas.ActualWidth;
+            li.Y1 = r * CellSize.Height;
+            li.Y2 = li.Y1;
+            canvas.Children.Add(li);
+        }
+
         private void CreateGrid()
         {
             canvas.Children.Clear();
             CellSize = new Size(canvas.ActualWidth / ColCount, canvas.ActualHeight / RowCount);
 
-            deadBrush = (GridViewType == GridViewType.GridLines) ? Background : deadGrayCellsBrush;
+            //deadBrush = (GridViewType == GridViewType.GridLines) ? Background : deadGrayCellsBrush;
 
             cells = new Ellipse[RowCount, ColCount];
+            lines = new Line[(RowCount - 2) * (ColCount - 2)];
+            CreateGridLines();
             for (int r = 0; r < RowCount; r++)
             {
                 for (int c = 0; c < ColCount; c++)
                 {
-
                     var cell = CreateCell(r, c);
                     SetCell(cell, false);
                     cells[r, c] = cell;
                 }
             }
+            UpdateUI();
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
