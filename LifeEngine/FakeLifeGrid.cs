@@ -11,9 +11,9 @@ namespace LifeEngine
         Random rnd = new Random();
         private bool[,] grid;
 
-        public FakeLifeGrid(int rowCount, int colCount)
+        public FakeLifeGrid(GridSize size)
         {
-            this.GridSize = new GridSize(rowCount, colCount);
+            this.GridSize = size;
             grid = new bool[RowCount, ColCount];
         }
 
@@ -36,21 +36,5 @@ namespace LifeEngine
         }
     }
 
-    public class CellInfo
-    {
-        public int Row;
-        public int Col;
-        public bool Live;
-    }
-
-    public class GridSize
-    {
-        public GridSize (int rowCount, int colCount)
-        {
-            this.RowCount = rowCount;
-            this.ColCount = colCount;
-        }
-        public int RowCount {get;private set;}
-        public int ColCount { get; private set; }
-    }
+    
 }

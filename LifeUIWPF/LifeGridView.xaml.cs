@@ -25,16 +25,12 @@ namespace LifeUIWPF
             InitializeComponent();
         }
 
-        const double CELLS_SPACING = 6;
-
-        static readonly Brush liveBrush = new SolidColorBrush(Colors.LightCoral);
-        static readonly Brush deadGrayCellsBrush = new SolidColorBrush(Colors.LightGray);
+        const double CELLS_SPACING = 6;        
         static readonly Brush lineBrush = new SolidColorBrush(Colors.LightGray);
-        Brush deadBrush = deadGrayCellsBrush;
-        Ellipse[,] cells;
-        Line[] lines;
-        public Size CellSize { get; private set; }
         
+        Ellipse[,] cells;
+
+        public Size CellSize { get; private set; }        
 
         private GridSize _gridSize = new GridSize(10,10);
         public GridSize GridSize
@@ -43,19 +39,41 @@ namespace LifeUIWPF
             set
             {
                 _gridSize = value;
-                UpdateUI();
+                CreateGrid();
             }
         }
 
-        private GridViewType _gridViewType = GridViewType.GridLines;
-        public GridViewType GridViewType
+        private Brush _liveCellBrush = new SolidColorBrush(Colors.LightCoral);
+        public Brush LiveCellBrush
         {
-            get { return _gridViewType; }
+            get { return _liveCellBrush; }
+            set
+            {
+                _liveCellBrush = value;
+                UpdateView();
+            }
+        }
+
+        private Brush _deadCellBrush;
+        public Brush DeadCellBrush
+        {
+            get { return _deadCellBrush; }
+            set
+            {
+                _deadCellBrush = value;
+                UpdateView();
+            }
+        }
+
+        private bool _showGridLines = true;
+
+        public bool ShowGridLines
+        {
+            get { return _showGridLines; }
             set 
             { 
-                _gridViewType = value;
-                deadBrush = (GridViewType == GridViewType.GridLines) ? Background : deadGrayCellsBrush;
-                UpdateUI();
+                _showGridLines = value;
+                UpdateView();
             }
         }
 
@@ -64,14 +82,10 @@ namespace LifeUIWPF
 
         public void Reset()
         {
-            for (int r = 0; r < RowCount; r++)
-            {
-                for (int c = 0; c < ColCount; c++)
-                {
-                    var cell = cells[r, c];
-                    SetCell(cell, false);
-                }
-            }
+            foreach (var cell in cells)
+	        {
+                SetCell(cell, false);
+	        } 
         }
 
         public void ChangeCells(CellInfo[] cellsChanged)
@@ -81,7 +95,6 @@ namespace LifeUIWPF
                 SetCell(cell.Row, cell.Col, cell.Live);
             }
         }
-
         private Ellipse CreateCell(int r, int c)
         {
             Ellipse el = new Ellipse();
@@ -94,33 +107,6 @@ namespace LifeUIWPF
             el.Tag = false;
             canvas.Children.Add(el);
             return el;
-        }
-
-
-        void UpdateUI()
-        {
-            foreach (var line in canvas.Children.OfType<Line>())
-            {
-                if (GridViewType == GridViewType.DeadGrayCells)
-                    line.Stroke = null;
-                else
-                    line.Stroke = lineBrush;
-            }
-
-            foreach (var cell in canvas.Children.OfType<Ellipse>())
-            {
-                if (GridViewType == GridViewType.DeadGrayCells)
-                {
-                    cell.Stroke = new SolidColorBrush(Colors.Black);
-                    cell.Fill = deadBrush;
-                }
-                else
-                {
-                    cell.Stroke = null;
-                    cell.Fill = canvas.Background;
-                    //cell.Fill = Brushes.White;
-                }
-            }
         }
 
         void el_MouseDown(object sender, MouseButtonEventArgs e)
@@ -137,10 +123,7 @@ namespace LifeUIWPF
         private void SetCell(Ellipse cell, bool live)
         {
             cell.Tag = live;
-            if (live)
-                cell.Fill = liveBrush;
-            else
-                cell.Fill = deadBrush;
+            UpdateCellView(cell);
         }
         
         private void ChangeCell(Ellipse cell)
@@ -169,6 +152,7 @@ namespace LifeUIWPF
             li.X2 = li.X1;
             li.Y1 = 0;
             li.Y2 = canvas.ActualHeight;
+            li.Stroke = lineBrush;
             canvas.Children.Add(li);
         }
 
@@ -179,6 +163,7 @@ namespace LifeUIWPF
             li.X2 = canvas.ActualWidth;
             li.Y1 = r * CellSize.Height;
             li.Y2 = li.Y1;
+            li.Stroke = lineBrush;
             canvas.Children.Add(li);
         }
 
@@ -186,11 +171,7 @@ namespace LifeUIWPF
         {
             canvas.Children.Clear();
             CellSize = new Size(canvas.ActualWidth / ColCount, canvas.ActualHeight / RowCount);
-
-            //deadBrush = (GridViewType == GridViewType.GridLines) ? Background : deadGrayCellsBrush;
-
             cells = new Ellipse[RowCount, ColCount];
-            lines = new Line[(RowCount - 2) * (ColCount - 2)];
             CreateGridLines();
             for (int r = 0; r < RowCount; r++)
             {
@@ -201,18 +182,40 @@ namespace LifeUIWPF
                     cells[r, c] = cell;
                 }
             }
-            UpdateUI();
+        }
+
+        private void UpdateView()
+        {
+            foreach (var cell in cells)
+            {
+                UpdateCellView(cell);
+            }
+            foreach (var line in canvas.Children.OfType<Line>())
+            {
+                UpdateLineView(line);
+            }
+        }
+
+        private void UpdateCellView(Ellipse cell)
+        {
+            if ((bool)cell.Tag)
+                cell.Fill = LiveCellBrush;
+            else
+                cell.Fill = DeadCellBrush;
+        }
+
+        private void UpdateLineView(Line line)
+        {
+            if (ShowGridLines)
+                line.Stroke = lineBrush;
+            else
+                line.Stroke = Background;
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
             CreateGrid();
+            DeadCellBrush = Background;
         }
-    }
-
-    public enum GridViewType
-    {
-        GridLines,
-        DeadGrayCells
     }
 }

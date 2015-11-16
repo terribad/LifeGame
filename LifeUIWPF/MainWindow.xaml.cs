@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 
 using LifeEngine;
+using Xceed.Wpf.Toolkit;
 namespace LifeUIWPF
 {
     /// <summary>
@@ -27,21 +28,42 @@ namespace LifeUIWPF
             InitializeComponent();
         }
 
-        const int GRID_COUNT = 20;
-        GridSize gridSize = new GridSize(20, 20);
+        const int GRID_COUNT = 15;
+        const double CELL_SIZE = 46;
         
-        const double CellSize = 36;
-
         DispatcherTimer timer;
-        FakeLifeGrid grid = new FakeLifeGrid(GRID_COUNT, GRID_COUNT);
+        FakeLifeGrid grid;
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            CreateGrid();
             CreateTimer();
-            this.Width = CellSize * gridSize.ColCount + gridView.Margin.Left + gridView.Margin.Right;
-            this.Height = CellSize * gridSize.RowCount + gridView.Margin.Top + gridView.Margin.Bottom;
-            gridView.GridSize = gridSize;
-            gridView.GridViewType = GridViewType.DeadGrayCells;
+            cpLiveColor.SelectedColorChanged += colorPicker_SelectedColorChanged;
+            cpDeadColor.SelectedColorChanged += colorPicker_SelectedColorChanged;
+            ResizeWindowOnGridSize();
+            gridView.GridSize = grid.GridSize;            
             UpdateUI();
+        }
+
+        void CreateGrid()
+        {
+            grid = new FakeLifeGrid(new GridSize(GRID_COUNT, GRID_COUNT));
+        }
+        
+        void ResizeWindowOnGridSize()
+        {
+            Width = CELL_SIZE * grid.ColCount + gridView.Margin.Left + gridView.Margin.Right;
+            Height = CELL_SIZE * grid.RowCount + gridView.Margin.Top + gridView.Margin.Bottom;
+        }
+
+        void colorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            ColorPicker cp = sender as ColorPicker;
+            if (!cp.SelectedColor.HasValue)
+                return;
+            if (cp.Name == "cpLiveColor")
+                gridView.LiveCellBrush = new SolidColorBrush(cpLiveColor.SelectedColor.Value);
+            else
+                gridView.DeadCellBrush = new SolidColorBrush(cpDeadColor.SelectedColor.Value);
         }
 
         void CreateTimer()
@@ -74,18 +96,14 @@ namespace LifeUIWPF
         private void UpdateUI()
         {
             btnReset.IsEnabled = !timer.IsEnabled;
-            btnSetGridType.IsEnabled = !timer.IsEnabled;
             btnStart.Content = timer.IsEnabled ? "Stop" : "Start";
-            btnSetGridType.Content = (gridView.GridViewType == GridViewType.GridLines) ? "Celle grigie" : "Reticolato";
+            btnShowGrid.Content = gridView.ShowGridLines ? "Nascondi griglia" : "Mostra griglia";
         }
 
-        private void btnSetGridType_Click(object sender, RoutedEventArgs e)
+        private void btnShowGrid_Click(object sender, RoutedEventArgs e)
         {
-            if (gridView.GridViewType == GridViewType.DeadGrayCells)
-                gridView.GridViewType = GridViewType.GridLines;
-            else
-                gridView.GridViewType = GridViewType.DeadGrayCells;
-            UpdateUI();
+            gridView.ShowGridLines = !gridView.ShowGridLines;
         }
+       
     }
 }
