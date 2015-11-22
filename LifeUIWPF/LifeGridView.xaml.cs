@@ -30,12 +30,14 @@ namespace LifeUIWPF
         
         Ellipse[,] cells;
 
-        public Size CellSize { get; private set; }        
-
-        public void SetCellSize(int value)
+        private double _cellSize = 36;
+        public double CellSize
         {
-            CellSize = new Size(value, value);
-            UpdateView();
+            get { return _cellSize; }
+            private set 
+            {
+                _cellSize = value;
+            }
         }
 
         private GridSize _gridSize = new GridSize(10,10);
@@ -104,11 +106,11 @@ namespace LifeUIWPF
         private Ellipse CreateCell(int r, int c)
         {
             Ellipse el = new Ellipse();
-            el.Width = CellSize.Width - CELLS_SPACING;
-            el.Height = CellSize.Height - CELLS_SPACING;
+            el.Width = CellSize - CELLS_SPACING;
+            el.Height = CellSize - CELLS_SPACING;
             el.StrokeThickness = 1;
-            Canvas.SetLeft(el, c * (CellSize.Width) + CELLS_SPACING/2);
-            Canvas.SetTop(el, r * (CellSize.Height) + CELLS_SPACING/2);
+            Canvas.SetLeft(el, c * CellSize + CELLS_SPACING/2);
+            Canvas.SetTop(el, r * CellSize + CELLS_SPACING/2);
             el.MouseDown += el_MouseDown;
             el.Tag = false;
             canvas.Children.Add(el);
@@ -140,6 +142,7 @@ namespace LifeUIWPF
 
         private void CreateGridLines()
         {
+            ClearLines();
             for (int r = 1; r < RowCount; r++)
             {
                 CreateHorizontalLine(r);
@@ -154,7 +157,7 @@ namespace LifeUIWPF
         private void CreateVerticalLine(int c)
         {
             Line li = new Line();
-            li.X1 = c * CellSize.Width;
+            li.X1 = c * CellSize;
             li.X2 = li.X1;
             li.Y1 = 0;
             li.Y2 = canvas.ActualHeight;
@@ -167,7 +170,7 @@ namespace LifeUIWPF
             Line li = new Line();
             li.X1 = 0;
             li.X2 = canvas.ActualWidth;
-            li.Y1 = r * CellSize.Height;
+            li.Y1 = r * CellSize;
             li.Y2 = li.Y1;
             li.Stroke = lineBrush;
             canvas.Children.Add(li);
@@ -176,9 +179,11 @@ namespace LifeUIWPF
         private void CreateGrid()
         {
             canvas.Children.Clear();
-            CellSize = new Size(canvas.ActualWidth / ColCount, canvas.ActualHeight / RowCount);
+            CellSize = canvas.ActualWidth / ColCount;
+            //canvas.Width = CellSize * ColCount;
+            //canvas.Height = CellSize * RowCount;
             cells = new Ellipse[RowCount, ColCount];
-            CreateGridLines();
+            
             for (int r = 0; r < RowCount; r++)
             {
                 for (int c = 0; c < ColCount; c++)
@@ -188,6 +193,22 @@ namespace LifeUIWPF
                     cells[r, c] = cell;
                 }
             }
+            CreateGridLines();
+        }
+
+        private void ClearLines()
+        {
+            var lines = canvas.Children.OfType<Line>();
+            foreach (var line in lines)
+            {
+                canvas.Children.Remove(line);
+            }
+        }
+
+        private void UpdateLayout()
+        {
+            CreateGridLines();
+            UpdateView();
         }
 
         private void UpdateView()
@@ -208,8 +229,8 @@ namespace LifeUIWPF
                 cell.Fill = LiveCellBrush;
             else
                 cell.Fill = DeadCellBrush;
-            cell.Width = CellSize.Width - CELLS_SPACING;
-            cell.Height = CellSize.Height - CELLS_SPACING;
+            cell.Width = CellSize - CELLS_SPACING;
+            cell.Height = CellSize - CELLS_SPACING;
         }
 
         private void UpdateLineView(Line line)

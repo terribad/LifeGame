@@ -72,9 +72,11 @@ namespace LifeUIWPF
         
         void UpdateWindowLayout()
         {
-            Width = CellSize * grid.ColCount + gridView.Margin.Left + gridView.Margin.Right;
-            Height = CellSize * grid.RowCount + gridView.Margin.Top + gridView.Margin.Bottom;
-            gridView.GridSize = grid.GridSize;    
+            Width = Settings.CellSize * grid.ColCount + gridView.Margin.Left + gridView.Margin.Right;
+            Height = Settings.CellSize * grid.RowCount + gridView.Margin.Top + gridView.Margin.Bottom + 54 +22;
+            gridView.GridSize = grid.GridSize;
+            //this.SizeToContent = SizeToContent.WidthAndHeight;
+            
         }
 
         void CreateTimer()
@@ -126,9 +128,8 @@ namespace LifeUIWPF
                 Settings = sd.GridSettings;
                 if (grid.RowCount != Settings.RowCount || grid.ColCount != Settings.ColCount)
                     InitGridView();
-                gridView.SetCellSize(Settings.CellSize);
-                UpdateUI();
             }
+            UpdateUI();
         }
 
         void sd_SettingApply(object sender, SettingsApplyEventArgs e)
