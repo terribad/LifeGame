@@ -13,14 +13,10 @@
     </Window.Resources>   
     
     <DockPanel LastChildFill="True" Background="LightBlue" Margin="0,0,0,0">
-        <StackPanel DockPanel.Dock="top" Orientation="Horizontal" HorizontalAlignment="Center" Height="35">
-            <Button Name="btnStart" Click="btnStart_Click">Start</Button>
-            <Button Name="btnReset" Click="btnReset_Click">Reset</Button>
-            <Button Name="btnShowGrid" Click="btnShowGrid_Click">Mostra griglia</Button>
-            <TextBlock Text="Live cell:" VerticalAlignment="Center"></TextBlock>
-            <wpfx:ColorPicker x:Name="cpLiveColor" Height="25" Width="100" DisplayColorAndName="True" />
-            <TextBlock Text="Dead cell:" Margin="10,0,0,0" VerticalAlignment="Center"></TextBlock>
-            <wpfx:ColorPicker x:Name="cpDeadColor" Height="25" Margin="0,0,0,0"  Width="100" DisplayColorAndName="True" />
+        <StackPanel DockPanel.Dock="top" Orientation="Horizontal" HorizontalAlignment="Center" Height="54">
+            <Button Name="btnStart" Click="btnStart_Click" Width="48" Height="48" Style="{StaticResource ImageButtonStyle}" Margin="0,5,5,0"/>
+            <Button Name="btnReset" Click="btnReset_Click" Width="48" Height="48" Style="{StaticResource ImageButtonStyle}" Margin="0,5,5,0" />
+            <Button Name="btnSettings" Click="btnSettings_Click" Width="48" Height="48" Style="{StaticResource ImageButtonStyle}" Margin="0,5,5,0"/>                                    
         </StackPanel>
         <local:LifeGridView x:Name="gridView" Margin="10, 10, 10, 10" Background="white"></local:LifeGridView>
     </DockPanel>

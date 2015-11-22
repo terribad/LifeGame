@@ -28,42 +28,53 @@ namespace LifeUIWPF
             InitializeComponent();
         }
 
-        const int GRID_COUNT = 15;
-        const double CELL_SIZE = 46;
+        GridSettings Settings
+        {
+            get { return Global.GridSettings; }
+            set { Global.GridSettings = value; }
+        }
+
+        int CellSize
+        {
+            get { return Settings.CellSize; }
+        }        
         
         DispatcherTimer timer;
         FakeLifeGrid grid;
+        ImageBrush imgStart = new ImageBrush(new BitmapImage(new Uri("pack://application:,,,/Assets/Start-48.png")));
+        ImageBrush imgStop = new ImageBrush(new BitmapImage(new Uri("pack://application:,,,/Assets/Stop-48.png")));
+        ImageBrush imgSettings = new ImageBrush(new BitmapImage(new Uri("pack://application:,,,/Assets/Settings-48.png")));
+        ImageBrush imgReset = new ImageBrush(new BitmapImage(new Uri("pack://application:,,,/Assets/Reset-48.png")));
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            CreateGrid();
             CreateTimer();
-            cpLiveColor.SelectedColorChanged += colorPicker_SelectedColorChanged;
-            cpDeadColor.SelectedColorChanged += colorPicker_SelectedColorChanged;
-            ResizeWindowOnGridSize();
-            gridView.GridSize = grid.GridSize;            
+            BindImageToButtons();
+            InitGridView();
+        }
+
+        void InitGridView()
+        {
+            CreateGrid();
+            UpdateWindowLayout();
             UpdateUI();
+        }
+
+        void BindImageToButtons()
+        {
+            btnSettings.Background = imgSettings;
+            btnReset.Background = imgReset;
         }
 
         void CreateGrid()
         {
-            grid = new FakeLifeGrid(new GridSize(GRID_COUNT, GRID_COUNT));
+            grid = new FakeLifeGrid(new GridSize(Settings.RowCount, Settings.ColCount));
         }
         
-        void ResizeWindowOnGridSize()
+        void UpdateWindowLayout()
         {
-            Width = CELL_SIZE * grid.ColCount + gridView.Margin.Left + gridView.Margin.Right;
-            Height = CELL_SIZE * grid.RowCount + gridView.Margin.Top + gridView.Margin.Bottom;
-        }
-
-        void colorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
-        {
-            ColorPicker cp = sender as ColorPicker;
-            if (!cp.SelectedColor.HasValue)
-                return;
-            if (cp.Name == "cpLiveColor")
-                gridView.LiveCellBrush = new SolidColorBrush(cpLiveColor.SelectedColor.Value);
-            else
-                gridView.DeadCellBrush = new SolidColorBrush(cpDeadColor.SelectedColor.Value);
+            Width = CellSize * grid.ColCount + gridView.Margin.Left + gridView.Margin.Right;
+            Height = CellSize * grid.RowCount + gridView.Margin.Top + gridView.Margin.Bottom;
+            gridView.GridSize = grid.GridSize;    
         }
 
         void CreateTimer()
@@ -93,16 +104,36 @@ namespace LifeUIWPF
             gridView.Reset();
         }
 
-        private void UpdateUI()
+        private void UpdateUI(GridSettings settings = null)
         {
+            if (settings == null)
+                settings = Settings;
             btnReset.IsEnabled = !timer.IsEnabled;
-            btnStart.Content = timer.IsEnabled ? "Stop" : "Start";
-            btnShowGrid.Content = gridView.ShowGridLines ? "Nascondi griglia" : "Mostra griglia";
+            btnStart.Background = timer.IsEnabled ? imgStop : imgStart;
+            gridView.LiveCellBrush = new SolidColorBrush(settings.LiveCellFillColor);
+            gridView.DeadCellBrush = new SolidColorBrush(settings.DeadCellFillColor);
+            gridView.ShowGridLines = settings.ShowGridLines;
         }
 
-        private void btnShowGrid_Click(object sender, RoutedEventArgs e)
+        private void btnSettings_Click(object sender, RoutedEventArgs e)
         {
-            gridView.ShowGridLines = !gridView.ShowGridLines;
+            var sd = new SettingsDialog();
+            sd.SettingApply += sd_SettingApply;
+            sd.GridSettings = Settings;
+            var ok = sd.ShowDialog();
+            if (ok.HasValue && ok.Value)
+            {
+                Settings = sd.GridSettings;
+                if (grid.RowCount != Settings.RowCount || grid.ColCount != Settings.ColCount)
+                    InitGridView();
+                gridView.SetCellSize(Settings.CellSize);
+                UpdateUI();
+            }
+        }
+
+        void sd_SettingApply(object sender, SettingsApplyEventArgs e)
+        {
+            UpdateUI(e.GridSettings);
         }
        
     }

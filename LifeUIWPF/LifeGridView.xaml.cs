@@ -32,6 +32,12 @@ namespace LifeUIWPF
 
         public Size CellSize { get; private set; }        
 
+        public void SetCellSize(int value)
+        {
+            CellSize = new Size(value, value);
+            UpdateView();
+        }
+
         private GridSize _gridSize = new GridSize(10,10);
         public GridSize GridSize
         {
@@ -202,6 +208,8 @@ namespace LifeUIWPF
                 cell.Fill = LiveCellBrush;
             else
                 cell.Fill = DeadCellBrush;
+            cell.Width = CellSize.Width - CELLS_SPACING;
+            cell.Height = CellSize.Height - CELLS_SPACING;
         }
 
         private void UpdateLineView(Line line)
