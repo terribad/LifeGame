@@ -42,6 +42,7 @@
     <Compile Include="CellInfo.cs" />
     <Compile Include="FakeLifeGrid.cs" />
     <Compile Include="GridSize.cs" />
+    <Compile Include="ILifeGrid.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

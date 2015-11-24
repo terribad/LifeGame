@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace LifeEngine
 {
-    public class FakeLifeGrid
+    public class FakeLifeGrid: ILifeGrid
     {
+        public event EventHandler<GridCellsChangedEventArgs> CellsChanged;
+
         Random rnd = new Random();
         private bool[,] grid;
 
@@ -20,6 +22,17 @@ namespace LifeEngine
         public GridSize GridSize { get; private set; }
         public int RowCount { get { return GridSize.RowCount; } }
         public int ColCount { get { return GridSize.ColCount; } }
+
+        public IEnumerable<CellInfo> GetCells()
+        {
+            for (int r = 0; r < grid.GetLength(0); r++)
+            {
+                for (int c = 0; c < grid.GetLength(1); c++)
+                {
+                    yield return new CellInfo { Row = r, Col = c, Live = grid[r, c] };
+                }
+            }
+        }
         public CellInfo[] Evolve()
         {
             var nc = rnd.Next(1, 8);
@@ -32,8 +45,17 @@ namespace LifeEngine
                 var cell = new CellInfo { Row = r, Col = c, Live = grid[r,c]};
                 cells[i] = cell;
             }
+            OnCellsChanged(new GridCellsChangedEventArgs { Cells=cells});
             return cells;
         }
+
+        private void OnCellsChanged(GridCellsChangedEventArgs e)
+        {
+            if (CellsChanged!= null)
+                CellsChanged(this, e);
+        }
+
+     
     }
 
     
