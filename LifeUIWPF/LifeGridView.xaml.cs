@@ -28,7 +28,7 @@ namespace LifeUIWPF
         const double CELLS_SPACING = 6;        
         static readonly Brush lineBrush = new SolidColorBrush(Colors.LightGray);
         
-        Ellipse[,] cells;
+        Ellipse[,] cellsView;
 
         private double _cellSize = 36;
         public double CellSize
@@ -40,14 +40,16 @@ namespace LifeUIWPF
             }
         }
 
-        private GridSize _gridSize = new GridSize(10,10);
-        public GridSize GridSize
+        private ILifeGrid _lifeGrid;
+        public ILifeGrid LifeGrid
         {
-            get { return _gridSize; }
-            set
+            get { return _lifeGrid; }
+            set 
             {
-                _gridSize = value;
+                _lifeGrid = value;                
                 CreateGrid();
+                _lifeGrid.Resetted += _lifeGrid_Resetted;
+                _lifeGrid.CellsChanged += _lifeGrid_CellsChanged;
             }
         }
 
@@ -58,7 +60,7 @@ namespace LifeUIWPF
             set
             {
                 _liveCellBrush = value;
-                UpdateView();
+                UpdateCellsView();
             }
         }
 
@@ -69,80 +71,94 @@ namespace LifeUIWPF
             set
             {
                 _deadCellBrush = value;
-                UpdateView();
+                UpdateCellsView();
             }
         }
 
         private bool _showGridLines = true;
-
         public bool ShowGridLines
         {
             get { return _showGridLines; }
             set 
             { 
                 _showGridLines = value;
-                UpdateView();
+                UpdateLinesView();
             }
         }
 
-        public int RowCount { get { return GridSize.RowCount; } }
-        public int ColCount { get { return GridSize.ColCount; } }
+        private int RowCount { get { return LifeGrid.RowCount; } }
+        private int ColCount { get { return LifeGrid.ColCount; } }
 
-        public void Reset()
+        void el_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            foreach (var cell in cells)
-	        {
-                SetCell(cell, false);
-	        } 
+            ChangeCell(sender as Ellipse);
+        }
+        void _lifeGrid_CellsChanged(object sender, GridCellsChangedEventArgs e)
+        {
+            UpdateCellsChangedView(e.Cells);
         }
 
-        public void ChangeCells(CellInfo[] cellsChanged)
+        void _lifeGrid_Resetted(object sender, EventArgs e)
         {
-            foreach (var cell in cellsChanged)
+            UpdateCellsView();
+        }
+        
+        private void ChangeCell(Ellipse cellView)
+        {
+            int row, col;
+            GetCellViewPosition(cellView, out row, out col);
+            LifeGrid.ChangeCell(row, col);
+        }
+
+        private void GetCellViewPosition(Ellipse cellView, out int row, out int col)
+        {
+            for (row = 0; row < RowCount; row++)
             {
-                SetCell(cell.Row, cell.Col, cell.Live);
+                for (col = 0; col < ColCount; col++)
+                {
+                    if (cellsView[row,col] == cellView)
+                        return;
+                }
             }
+            row = -1;
+            col = -1;
         }
+
+        private void CreateGrid()
+        {
+            canvas.Children.Clear();
+            CellSize = canvas.ActualWidth / ColCount;
+            //canvas.Width = CellSize * ColCount;
+            //canvas.Height = CellSize * RowCount;
+            cellsView = new Ellipse[RowCount, ColCount];
+            for (int r = 0; r < RowCount; r++)
+            {
+                for (int c = 0; c < ColCount; c++)
+                {
+                    var cell = CreateCell(r, c);
+                    cellsView[r, c] = cell;
+                    UpdateCellView(r, c, false);
+                }
+            }
+            CreateGridLines();
+        }
+
         private Ellipse CreateCell(int r, int c)
         {
             Ellipse el = new Ellipse();
             el.Width = CellSize - CELLS_SPACING;
             el.Height = CellSize - CELLS_SPACING;
             el.StrokeThickness = 1;
-            Canvas.SetLeft(el, c * CellSize + CELLS_SPACING/2);
-            Canvas.SetTop(el, r * CellSize + CELLS_SPACING/2);
+            Canvas.SetLeft(el, c * CellSize + CELLS_SPACING / 2);
+            Canvas.SetTop(el, r * CellSize + CELLS_SPACING / 2);
             el.MouseDown += el_MouseDown;
             el.Tag = false;
             canvas.Children.Add(el);
             return el;
         }
 
-        void el_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            Ellipse cell = sender as Ellipse;
-            ChangeCell(cell);
-        }
-
-        private void SetCell(int row, int col, bool live)
-        {
-            SetCell(cells[row, col], live);
-        }
-
-        private void SetCell(Ellipse cell, bool live)
-        {
-            cell.Tag = live;
-            UpdateCellView(cell);
-        }
-        
-        private void ChangeCell(Ellipse cell)
-        {
-            bool live = !(bool)cell.Tag;
-            SetCell(cell, live);            
-        }
-
         private void CreateGridLines()
         {
-            ClearLines();
             for (int r = 1; r < RowCount; r++)
             {
                 CreateHorizontalLine(r);
@@ -176,47 +192,33 @@ namespace LifeUIWPF
             canvas.Children.Add(li);
         }
 
-        private void CreateGrid()
+        #region UPDATE CELL VIEW
+        private void UpdateCellsChangedView(CellInfo[] cellsChanged)
         {
-            canvas.Children.Clear();
-            CellSize = canvas.ActualWidth / ColCount;
-            //canvas.Width = CellSize * ColCount;
-            //canvas.Height = CellSize * RowCount;
-            cells = new Ellipse[RowCount, ColCount];
-            
-            for (int r = 0; r < RowCount; r++)
-            {
-                for (int c = 0; c < ColCount; c++)
-                {
-                    var cell = CreateCell(r, c);
-                    SetCell(cell, false);
-                    cells[r, c] = cell;
-                }
-            }
-            CreateGridLines();
+            foreach (var ci in cellsChanged)
+                UpdateCellView(ci.Row, ci.Col, ci.Live);
         }
 
-        private void ClearLines()
+        private void UpdateCellsView()
         {
-            var lines = canvas.Children.OfType<Line>();
-            foreach (var line in lines)
-            {
-                canvas.Children.Remove(line);
-            }
+            foreach (var ci in LifeGrid.GetCells())
+                UpdateCellView(ci.Row, ci.Col, ci.Live);
         }
 
-        private void UpdateLayout()
+        private void UpdateCellView(int row, int col, bool live)
         {
-            CreateGridLines();
-            UpdateView();
+            var cv = cellsView[row, col];
+            UpdateCellView(cv, live);
         }
 
-        private void UpdateView()
+        private void UpdateCellView(Ellipse cellView, bool live)
         {
-            foreach (var cell in cells)
-            {
-                UpdateCellView(cell);
-            }
+            cellView.Fill = (live) ? LiveCellBrush : DeadCellBrush;
+        }
+        #endregion  
+
+        private void UpdateLinesView()
+        {
             foreach (var line in canvas.Children.OfType<Line>())
             {
                 UpdateLineView(line);
@@ -229,8 +231,6 @@ namespace LifeUIWPF
                 cell.Fill = LiveCellBrush;
             else
                 cell.Fill = DeadCellBrush;
-            cell.Width = CellSize - CELLS_SPACING;
-            cell.Height = CellSize - CELLS_SPACING;
         }
 
         private void UpdateLineView(Line line)

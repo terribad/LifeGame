@@ -9,6 +9,7 @@ namespace LifeEngine
     public class FakeLifeGrid: ILifeGrid
     {
         public event EventHandler<GridCellsChangedEventArgs> CellsChanged;
+        public event EventHandler Resetted;
 
         Random rnd = new Random();
         private bool[,] grid;
@@ -22,6 +23,24 @@ namespace LifeEngine
         public GridSize GridSize { get; private set; }
         public int RowCount { get { return GridSize.RowCount; } }
         public int ColCount { get { return GridSize.ColCount; } }
+
+        public void Reset()
+        {
+            grid = new bool[RowCount, ColCount];
+            OnResetted();
+        }
+
+        public CellInfo GetCellInfo(int row, int col)
+        {
+            return new CellInfo { Row = row, Col = col, Live = grid[row, col] };
+        }
+
+        public void ChangeCell(int row, int col)
+        {
+            grid[row, col] = !grid[row, col];
+            var cells = new CellInfo[] { GetCellInfo(row, col)};
+            OnCellsChanged(new GridCellsChangedEventArgs { Cells = cells});
+        }
 
         public IEnumerable<CellInfo> GetCells()
         {
@@ -55,7 +74,15 @@ namespace LifeEngine
                 CellsChanged(this, e);
         }
 
-     
+        private void OnResetted()
+        {
+            if (Resetted != null)
+                Resetted(this, EventArgs.Empty);
+        }
+
+
+
+        
     }
 
     

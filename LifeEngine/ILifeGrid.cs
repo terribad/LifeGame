@@ -9,10 +9,13 @@ namespace LifeEngine
     public interface ILifeGrid
     {
         event EventHandler<GridCellsChangedEventArgs> CellsChanged;
+        event EventHandler Resetted;
         GridSize GridSize { get; }
         int RowCount { get; }
         int ColCount { get;}
+        CellInfo GetCellInfo(int row, int col);
         IEnumerable<CellInfo> GetCells();
+        void ChangeCell(int row, int col);      
         CellInfo[] Evolve();        
     }
 

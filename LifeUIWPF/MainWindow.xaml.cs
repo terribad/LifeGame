@@ -74,9 +74,17 @@ namespace LifeUIWPF
         {
             Width = Settings.CellSize * grid.ColCount + gridView.Margin.Left + gridView.Margin.Right;
             Height = Settings.CellSize * grid.RowCount + gridView.Margin.Top + gridView.Margin.Bottom + 54 +22;
-            gridView.GridSize = grid.GridSize;
-            //this.SizeToContent = SizeToContent.WidthAndHeight;
-            
+            gridView.LifeGrid = grid;
+            //this.SizeToContent = SizeToContent.WidthAndHeight;            
+        }
+
+        void UpdateGridView(GridSettings settings = null)
+        {
+            if (settings == null)
+                settings = Settings;
+            gridView.LiveCellBrush = new SolidColorBrush(settings.LiveCellFillColor);
+            gridView.DeadCellBrush = new SolidColorBrush(settings.DeadCellFillColor);
+            gridView.ShowGridLines = settings.ShowGridLines;
         }
 
         void CreateTimer()
@@ -88,8 +96,7 @@ namespace LifeUIWPF
 
         void dispatcherTimer_Tick(object sender, EventArgs e)
         {
-            CellInfo[] cellsChanged = grid.Evolve();
-            gridView.ChangeCells(cellsChanged);
+            grid.Evolve();
         }
 
         private void btnStart_Click(object sender, RoutedEventArgs e)
@@ -103,18 +110,13 @@ namespace LifeUIWPF
 
         private void btnReset_Click(object sender, RoutedEventArgs e)
         {
-            gridView.Reset();
+            grid.Reset();
         }
 
-        private void UpdateUI(GridSettings settings = null)
+        private void UpdateUI()
         {
-            if (settings == null)
-                settings = Settings;
             btnReset.IsEnabled = !timer.IsEnabled;
             btnStart.Background = timer.IsEnabled ? imgStop : imgStart;
-            gridView.LiveCellBrush = new SolidColorBrush(settings.LiveCellFillColor);
-            gridView.DeadCellBrush = new SolidColorBrush(settings.DeadCellFillColor);
-            gridView.ShowGridLines = settings.ShowGridLines;
         }
 
         private void btnSettings_Click(object sender, RoutedEventArgs e)
@@ -134,7 +136,7 @@ namespace LifeUIWPF
 
         void sd_SettingApply(object sender, SettingsApplyEventArgs e)
         {
-            UpdateUI(e.GridSettings);
+            UpdateGridView(e.GridSettings);
         }
        
     }
