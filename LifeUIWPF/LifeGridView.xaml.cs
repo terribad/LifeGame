@@ -34,13 +34,16 @@ namespace LifeUIWPF
         public double CellSize
         {
             get { return _cellSize; }
-            private set 
+            set 
             {
+                if (_cellSize == value)
+                    return;
                 _cellSize = value;
+                CreateGrid();
             }
         }
 
-        private ILifeGrid _lifeGrid;
+        private ILifeGrid _lifeGrid = new FakeLifeGrid(new GridSize(10, 10));
         public ILifeGrid LifeGrid
         {
             get { return _lifeGrid; }
@@ -127,23 +130,19 @@ namespace LifeUIWPF
         private void CreateGrid()
         {
             canvas.Children.Clear();
-            CellSize = canvas.ActualWidth / ColCount;
-            //canvas.Width = CellSize * ColCount;
-            //canvas.Height = CellSize * RowCount;
+            canvas.Width = CellSize * ColCount;
+            canvas.Height = CellSize * RowCount;  
+          
             cellsView = new Ellipse[RowCount, ColCount];
             for (int r = 0; r < RowCount; r++)
-            {
                 for (int c = 0; c < ColCount; c++)
-                {
-                    var cell = CreateCell(r, c);
-                    cellsView[r, c] = cell;
-                    UpdateCellView(r, c, false);
-                }
-            }
+                    cellsView[r, c] = CreateCellView(r, c);
+
+            UpdateCellsView();
             CreateGridLines();
         }
 
-        private Ellipse CreateCell(int r, int c)
+        private Ellipse CreateCellView(int r, int c)
         {
             Ellipse el = new Ellipse();
             el.Width = CellSize - CELLS_SPACING;
@@ -168,6 +167,7 @@ namespace LifeUIWPF
             {
                 CreateVerticalLine(c);
             }
+            UpdateLinesView();
         }
 
         private void CreateVerticalLine(int c)
@@ -177,7 +177,6 @@ namespace LifeUIWPF
             li.X2 = li.X1;
             li.Y1 = 0;
             li.Y2 = canvas.ActualHeight;
-            li.Stroke = lineBrush;
             canvas.Children.Add(li);
         }
 
@@ -188,11 +187,10 @@ namespace LifeUIWPF
             li.X2 = canvas.ActualWidth;
             li.Y1 = r * CellSize;
             li.Y2 = li.Y1;
-            li.Stroke = lineBrush;
             canvas.Children.Add(li);
         }
 
-        #region UPDATE CELL VIEW
+        #region UPDATEVIEW
         private void UpdateCellsChangedView(CellInfo[] cellsChanged)
         {
             foreach (var ci in cellsChanged)
@@ -215,31 +213,26 @@ namespace LifeUIWPF
         {
             cellView.Fill = (live) ? LiveCellBrush : DeadCellBrush;
         }
-        #endregion  
+        
 
         private void UpdateLinesView()
         {
+            var list = canvas.Children.OfType<Line>();
+            int c = list.Count();
             foreach (var line in canvas.Children.OfType<Line>())
             {
                 UpdateLineView(line);
             }
         }
-
-        private void UpdateCellView(Ellipse cell)
-        {
-            if ((bool)cell.Tag)
-                cell.Fill = LiveCellBrush;
-            else
-                cell.Fill = DeadCellBrush;
-        }
-
         private void UpdateLineView(Line line)
         {
             if (ShowGridLines)
                 line.Stroke = lineBrush;
             else
-                line.Stroke = Background;
+                line.Stroke = Brushes.Transparent;
         }
+
+        #endregion
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {

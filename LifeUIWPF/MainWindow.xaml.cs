@@ -49,14 +49,7 @@ namespace LifeUIWPF
         {
             CreateTimer();
             BindImageToButtons();
-            InitGridView();
-        }
-
-        void InitGridView()
-        {
             CreateGrid();
-            UpdateWindowLayout();
-            UpdateUI();
         }
 
         void BindImageToButtons()
@@ -68,16 +61,11 @@ namespace LifeUIWPF
         void CreateGrid()
         {
             grid = new FakeLifeGrid(new GridSize(Settings.RowCount, Settings.ColCount));
+            gridView.LifeGrid = grid;
+            this.SizeToContent = SizeToContent.WidthAndHeight;
+            UpdateUI();
         }
         
-        void UpdateWindowLayout()
-        {
-            Width = Settings.CellSize * grid.ColCount + gridView.Margin.Left + gridView.Margin.Right;
-            Height = Settings.CellSize * grid.RowCount + gridView.Margin.Top + gridView.Margin.Bottom + 54 +22;
-            gridView.LifeGrid = grid;
-            //this.SizeToContent = SizeToContent.WidthAndHeight;            
-        }
-
         void UpdateGridView(GridSettings settings = null)
         {
             if (settings == null)
@@ -85,6 +73,7 @@ namespace LifeUIWPF
             gridView.LiveCellBrush = new SolidColorBrush(settings.LiveCellFillColor);
             gridView.DeadCellBrush = new SolidColorBrush(settings.DeadCellFillColor);
             gridView.ShowGridLines = settings.ShowGridLines;
+            gridView.CellSize = settings.CellSize;
         }
 
         void CreateTimer()
@@ -129,8 +118,9 @@ namespace LifeUIWPF
             {
                 Settings = sd.GridSettings;
                 if (grid.RowCount != Settings.RowCount || grid.ColCount != Settings.ColCount)
-                    InitGridView();
+                    CreateGrid();
             }
+            UpdateGridView();
             UpdateUI();
         }
 

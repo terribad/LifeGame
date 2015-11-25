@@ -35,9 +35,19 @@ namespace LifeUIWPF
 
         private void btnOk_Click(object sender, RoutedEventArgs e)
         {
-            GridSettings = GetSettings();
+            var settings = GetSettings();
+            if (settings.RowCount != GridSettings.RowCount || settings.ColCount != GridSettings.ColCount)
+            {
+                var cmd = MessageBox.Show("Le dimensioni della griglia sono variate.\nLa griglia sarà creata di nuovo.\nVuoi continuare?", "LifeGame", MessageBoxButton.YesNoCancel, MessageBoxImage.Warning);
+                if (cmd != MessageBoxResult.Yes)
+                {
+                    return;
+                }
+            }
             DialogResult = true;
+            GridSettings = settings;
             Close();
+            
         }
 
         private GridSettings GetSettings()

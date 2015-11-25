@@ -10,15 +10,21 @@
                 <ResourceDictionary Source="MainWindowResource.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </Window.Resources>   
-    
-    <DockPanel LastChildFill="True" Background="LightBlue" Margin="0,0,0,0">
-        <StackPanel DockPanel.Dock="top" Orientation="Horizontal" HorizontalAlignment="Center" Height="54">
+    </Window.Resources>
+
+    <Grid Background="LightBlue">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Height="54" HorizontalAlignment="Center">
             <Button Name="btnStart" Click="btnStart_Click" Width="48" Height="48" Style="{StaticResource ImageButtonStyle}" Margin="0,5,5,0"/>
             <Button Name="btnReset" Click="btnReset_Click" Width="48" Height="48" Style="{StaticResource ImageButtonStyle}" Margin="0,5,5,0" />
-            <Button Name="btnSettings" Click="btnSettings_Click" Width="48" Height="48" Style="{StaticResource ImageButtonStyle}" Margin="0,5,5,0"/>                                    
+            <Button Name="btnSettings" Click="btnSettings_Click" Width="48" Height="48" Style="{StaticResource ImageButtonStyle}" Margin="0,5,5,0"/>
         </StackPanel>
-        <local:LifeGridView x:Name="gridView" Margin="10, 10, 10, 10" Background="white"></local:LifeGridView>
-    </DockPanel>
-
+        <local:LifeGridView x:Name="gridView" Grid.Row="1" Margin="10, 10, 10, 10" Background="white"></local:LifeGridView>
+    </Grid>
 </Window>
